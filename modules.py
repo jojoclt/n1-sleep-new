@@ -174,3 +174,28 @@ def lol(signal_df, write_folder, psg_id, save_fig=False):
     else:
         plt.show()
     plt.close()
+
+# Condition
+# 1. predict start = n1 start
+# 2. in N1
+# 3. +- 1 min
+def accuracy_method_1(signal_df):
+    cond_pred = signal_df['N1_predict'][signal_df['N1_predict']==int(1)]
+    cond_true = signal_df['N1'][signal_df['N1']==int(1)]
+    return cond_pred.index[0] == cond_true.index[0]
+
+def accuracy_method_2(signal_df):
+    cond_pred = signal_df['N1_predict'][signal_df['N1_predict']==int(1)]
+    cond_true = signal_df['N1'][signal_df['N1']==int(1)]
+    arr = cond_pred & cond_true
+    return (len(arr[arr]) > 0) and (cond_pred.index[0] >= cond_true.index[0])
+
+def accuracy_method_3(signal_df):
+    cond_pred = signal_df['N1_predict'][signal_df['N1_predict']==int(1)]
+    cond_true = signal_df['N1'][signal_df['N1']==int(1)]
+    # extend cond_true by +- 1 min
+    s = cond_true.index[0] - pd.Timedelta(minutes=1)
+    e = cond_true.index[-1] + pd.Timedelta(minutes=1)
+    cond_true[s:e] = True
+    arr = cond_pred & cond_true
+    return (len(arr[arr]) > 0) and (cond_pred.index[0] >= cond_true.index[0])
