@@ -190,12 +190,14 @@ def accuracy_method_2(signal_df):
     arr = cond_pred & cond_true
     return (len(arr[arr]) > 0) and (cond_pred.index[0] >= cond_true.index[0])
 
-def accuracy_method_3(signal_df):
+def accuracy_method_3(signal_df, min=2):
     cond_pred = signal_df['N1_predict'][signal_df['N1_predict']==int(1)]
     cond_true = signal_df['N1'][signal_df['N1']==int(1)]
     # extend cond_true by +- 1 min
-    s = cond_true.index[0] - pd.Timedelta(minutes=1)
-    e = cond_true.index[-1] + pd.Timedelta(minutes=1)
-    cond_true[s:e] = True
+    s = cond_true.index[0] - pd.Timedelta(minutes=min)
+    e = cond_true.index[-1] + pd.Timedelta(minutes=min)
+    cond_true = pd.Series(np.ones(len(signal_df)), index=signal_df.index)
+    cond_true = cond_true[s:e] == int(1)
+    # print(cond_true)
     arr = cond_pred & cond_true
     return (len(arr[arr]) > 0) and (cond_pred.index[0] >= cond_true.index[0])
