@@ -15,14 +15,15 @@ EEG_THRES = 25
 EEG_CONSEC = 300
 EEG_TOTAL_SIZE = 1500
 
-EEG2_THRES = 20
-EEG2_CONSEC = 500
-EEG2_TOTAL_SIZE = 1500
+# EEG2_THRES = 25
+# EEG2_CONSEC = 300
+# EEG2_TOTAL_SIZE = 1500
 
 EOG_THRES = 120
 EOG_CONSEC = 2500
 EOG_TOTAL_SIZE = 2500
 extend = 30 
+file = '4491'
 
 def reprval(text):
     thres = eval(f"{text}_THRES")
@@ -31,14 +32,14 @@ def reprval(text):
     return f"{text}_{thres}-{consec}-{total_size}"
 
 read_folder = f'./clips_front_extend_{extend}/'
-write_folder = f'plot_{extend}_{reprval("EEG")}_{reprval("EEG2")}_{reprval("EOG")}/'
+write_folder = f'./plot_single/'
 
 # logging.basicConfig(filename=write_folder+'print.log', encoding='utf-8', level=logging.DEBUG)
 print(write_folder)
 
 os.makedirs(write_folder, exist_ok=True)
-pattern1 = '*-PSG.edf'
-pattern2 = '*-Hypnogram.edf'
+pattern1 = f'*{file}*-PSG.edf'
+pattern2 = f'*{file}*-Hypnogram.edf'
 
 psg_list = sorted([f for f in os.listdir(read_folder) if fnmatch.fnmatch(f, pattern1)])
 hypnogram_list = sorted([f for f in os.listdir(read_folder) if fnmatch.fnmatch(f, pattern2)])
@@ -49,7 +50,7 @@ channels = ['EEG Fpz-Cz', 'EEG Pz-Oz', 'EOG horizontal']
 channel = channels[1]
 
 for i, (psg_id, hypnogram_id) in enumerate(zip(psg_iter, hypnogram_iter)):
-    print(f"{i}/{len(psg_list)}", end="\r")
+    # print(f"{i}/{len(psg_list)}", end="\r")
     signal_path = os.path.join(read_folder, psg_id)
     label_path = os.path.join(read_folder, hypnogram_id)
     edf_signal = pyedflib.EdfReader(signal_path)
@@ -78,11 +79,10 @@ for i, (psg_id, hypnogram_id) in enumerate(zip(psg_iter, hypnogram_iter)):
     
     signal_df['N1'] = annotate_sleep_stage(signal_df, annotations_df, start)
 
-    eeg_index = n1_multi_range(signal_df[channels[0]], thres=EEG_THRES, CONSECUTIVE_STEPS=EEG_CONSEC, total_size=EEG_TOTAL_SIZE)
-    eeg2_index = n1_multi_range(signal_df[channels[1]], thres=EEG2_THRES, CONSECUTIVE_STEPS=EEG2_CONSEC, total_size=EEG2_TOTAL_SIZE)
-    eog_index = n1_multi_range(signal_df[channels[2]], thres=EOG_THRES, CONSECUTIVE_STEPS=EOG_CONSEC, total_size=EOG_TOTAL_SIZE)
+    eeg_index = n1_multi_range(signal_df[channels[0]], thres=EEG_THRES, CONSECUTIVE_STEPS=EEG_CONSEC, total_size=EEG_TOTAL_SIZE, DEBUG = True)
+    eog_index = n1_multi_range(signal_df[channels[2]], thres=EOG_THRES, CONSECUTIVE_STEPS=EOG_CONSEC, total_size=EOG_TOTAL_SIZE, DEBUG = True)
 
-    signal_df = get_n1_eeg(signal_df, eeg_index, eeg2_index, eog_index, psg_id)
+    signal_df = get_n1_eeg(signal_df, eeg_index, eog_index, psg_id)
     lol(signal_df, write_folder, psg_id, save_fig=True)
     # break
 

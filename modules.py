@@ -3,9 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
+import logging
 
 # This function has been modified to make use of numpy and optimized to be faster.
-def n1_multi_range(signal_df, thres = 25, CONSECUTIVE_STEPS = 50, total_size = 1500):
+def n1_multi_range(signal_df, thres = 25, CONSECUTIVE_STEPS = 50, total_size = 1500, DEBUG=False):
     index = []
     start = -1
     interval = 0
@@ -27,6 +28,9 @@ def n1_multi_range(signal_df, thres = 25, CONSECUTIVE_STEPS = 50, total_size = 1
                     count += inner_count
                 inner_count = 0
 
+        if (DEBUG):
+            print(count+inner_count,)
+
         if count + inner_count >= total_size:
             if interval == 0:
                 start = i
@@ -40,67 +44,126 @@ def n1_multi_range(signal_df, thres = 25, CONSECUTIVE_STEPS = 50, total_size = 1
             else:
                 index.append((start,i))
             interval = 0
+    if (DEBUG):
+        print("--------")
     return index
 
-def get_n1_eeg(signal_df, eeg_index, eog_index):
+def get_n1_eeg(signal_df, eeg_index, eeg2_index, eog_index, psg_id):
     start = pd.to_datetime(signal_df.index[0])
+        
+    def annotate_sleep_stage_predict(signal_df, eeg_index):
+        mask = np.zeros(len(signal_df), dtype=int)
+        for interval in eeg_index:
+            start_index, end_index = interval
+            start_time = start + pd.to_timedelta(start_index / 100, unit='seconds')
+            end_time = start + pd.to_timedelta(end_index / 100, unit='seconds')
+            interval_mask = (signal_df.index >= start_time) & (signal_df.index < end_time)
+            mask |= interval_mask
 
-    def check_sleep_stage_predict(row, start_index, duration):
-        start_time = start + timedelta(seconds = start_index)
-        end_time = start + timedelta(seconds = start_index) + timedelta(seconds = duration)
-        if start_time <= pd.to_datetime(row.name) < end_time:
-            return int(1)
-        else:
-            return int(0)
+        return mask
 
     if len(eeg_index) == 0:
-        print("EEG_INDEX_NOT_FOUND")
+        print("EEG_INDEX_NOT_FOUND at", psg_id)
         pass
     else:
-        flag = 0
-        for interval in eeg_index:
-            intv = signal_df.apply(check_sleep_stage_predict, start_index=int(interval[0]/100), duration=int((interval[1]-interval[0])/100), axis=1)
-            if not flag:
-                signal_df['N1_predict_EEG'] = intv
-                flag = 1
-            else:
-                signal_df['N1_predict_EEG'] |= intv
+        signal_df['N1_predict_EEG'] = annotate_sleep_stage_predict(signal_df, eeg_index)
 
-    if len(eog_index) == 0:
-        print("EOG_NOT_FOUND")
+    if eeg2_index is None:
+        pass
+    elif len(eeg2_index) == 0:
+        print("EEG2_INDEX_NOT_FOUND at", psg_id)
         pass
     else:
-        flag = 0
-        for interval in eog_index:
-            intv = signal_df.apply(check_sleep_stage_predict, start_index=int(interval[0]/100), duration=int((interval[1]-interval[0])/100), axis=1)
-            if not flag:
-                signal_df['N1_predict_EOG'] = intv
-                flag = 1
-            else:
-                signal_df['N1_predict_EOG'] |= intv
+        signal_df['N1_predict_EEG2'] = annotate_sleep_stage_predict(signal_df, eeg2_index)
+    
+    if len(eog_index) == 0:
+        print("EOG_NOT_FOUND at", psg_id)
+        pass
+    else:
+        signal_df['N1_predict_EOG'] = annotate_sleep_stage_predict(signal_df, eog_index)
+
     try:
         not_empty_EEG = (signal_df.get('N1_predict_EEG') != 0).any()
     except Exception as e:
-        print("EEG_ERROR",e)
+        # print("EEG_ERROR",e)
         not_empty_EEG = False
+    try:
+        not_empty_EEG2 = (signal_df.get('N1_predict_EEG2') != 0).any()
+    except Exception as e:
+        # print("EEG2_ERROR",e)
+        not_empty_EEG2 = False
     try:
         not_empty_EOG = (signal_df.get('N1_predict_EOG') != 0).any()
     except Exception as e:
-        print("EOG_ERROR",e)
+        # print("EOG_ERROR",e)
         not_empty_EOG = False
-    if (not_empty_EEG & not_empty_EOG):
+
+    signal_df['N1_predict'] = np.ones(len(signal_df), dtype=int)
+
+    eeg_con, eeg2_con, eog_con = None, None, None
+
+    if (not_empty_EEG and not_empty_EEG2):
         eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
+        eeg2_con = signal_df['N1_predict_EEG2'][signal_df['N1_predict_EEG2']==int(1)]
+        signal_df['N1_predict'] &= eeg_con & eeg2_con
+
+    elif (not_empty_EEG):
+        eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
+        signal_df['N1_predict'] &= eeg_con
+        
+    elif (not_empty_EEG2):
+        eeg2_con = signal_df['N1_predict_EEG2'][signal_df['N1_predict_EEG2']==int(1)]
+        signal_df['N1_predict'] &= eeg2_con
+
+    if (not_empty_EOG):
         eog_con = signal_df['N1_predict_EOG'][signal_df['N1_predict_EOG']==int(1)]
-        # cond = eeg_con & eog_con # condition
-        signal_df['N1_predict'] = eeg_con & eog_con
+        signal_df['N1_predict'] &= eog_con
+    try:
         length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
-        # print(length_pred)
-        if length_pred == 0:
-            signal_df['N1_predict'] = signal_df['N1_predict_EOG']
-    elif not_empty_EOG:
-        signal_df['N1_predict'] = signal_df['N1_predict_EOG']
-    elif not_empty_EEG:
-        signal_df['N1_predict'] = signal_df['N1_predict_EEG']
+        if length_pred == len(signal_df):
+            signal_df['N1_predict'] = eog_con
+            length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
+            if length_pred == len(signal_df):
+                signal_df['N1_predict'] = eeg_con
+                length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
+                if length_pred == len(signal_df):
+                    signal_df['N1_predict'] = eeg2_con
+    except:
+        pass
+    
+    # # Use both EEG and maybe AND with EOG
+    # if (not_empty_EEG & not_empty_EEG2):
+    #     eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
+    #     eeg2_con = signal_df['N1_predict_EEG2'][signal_df['N1_predict_EEG2']==int(1)]
+    #     signal_df['N1_predict'] = eeg_con & eeg2_con
+    
+    # # Only 
+    # elif (not_empty_EEG ^ not_empty_EEG2):
+    #     if not_empty_EEG:
+    #         signal_df['N1_predict'] = signal_df['N1_predict_EEG']
+    #     elif not_empty_EEG2:
+    #         signal_df['N1_predict'] = signal_df['N1_predict_EEG2']
+
+    # if not_empty_EOG:
+    #     eog_con = signal_df['N1_predict_EOG'][signal_df['N1_predict_EOG']==int(1)]
+    #     signal_df['N1_predict'] = signal_df['N1_predict'] & eog_con
+    
+
+
+    # if (not_empty_EEG & not_empty_EOG):
+    #     eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
+    #     eog_con = signal_df['N1_predict_EOG'][signal_df['N1_predict_EOG']==int(1)]
+    #     signal_df['N1_predict'] = eeg_con & eog_con
+
+    #     length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
+    #     # print(length_pred)
+    #     if length_pred == 0:
+    #         signal_df['N1_predict'] = signal_df['N1_predict_EOG']
+    # elif not_empty_EOG:
+    #     signal_df['N1_predict'] = signal_df['N1_predict_EOG']
+    # elif not_empty_EEG:
+    #     signal_df['N1_predict'] = signal_df['N1_predict_EEG']
+    print()
     return signal_df
 
 def lol(signal_df, write_folder, psg_id, save_fig=False):
