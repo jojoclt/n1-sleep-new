@@ -102,6 +102,7 @@ def get_n1_eeg(signal_df, eeg_index, eeg2_index, eog_index, psg_id):
 
     eeg_con, eeg2_con, eog_con = None, None, None
 
+    # 1. normal methods
     if (not_empty_EEG and not_empty_EEG2):
         eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
         eeg2_con = signal_df['N1_predict_EEG2'][signal_df['N1_predict_EEG2']==int(1)]
@@ -118,51 +119,18 @@ def get_n1_eeg(signal_df, eeg_index, eeg2_index, eog_index, psg_id):
     if (not_empty_EOG):
         eog_con = signal_df['N1_predict_EOG'][signal_df['N1_predict_EOG']==int(1)]
         signal_df['N1_predict'] &= eog_con
+    
     try:
         length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
-        if length_pred == len(signal_df):
-            signal_df['N1_predict'] = eog_con
+        # 2. if normal methods fail, use eeg2 & eog
+        if length_pred == 0:
+            signal_df['N1_predict'] = eog_con & eeg2_con
             length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
-            if length_pred == len(signal_df):
-                signal_df['N1_predict'] = eeg_con
-                length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
-                if length_pred == len(signal_df):
-                    signal_df['N1_predict'] = eeg2_con
+            if length_pred == 0:
+                signal_df['N1_predict'] = signal_df['N1_predict_EOG']
     except:
         pass
-    
-    # # Use both EEG and maybe AND with EOG
-    # if (not_empty_EEG & not_empty_EEG2):
-    #     eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
-    #     eeg2_con = signal_df['N1_predict_EEG2'][signal_df['N1_predict_EEG2']==int(1)]
-    #     signal_df['N1_predict'] = eeg_con & eeg2_con
-    
-    # # Only 
-    # elif (not_empty_EEG ^ not_empty_EEG2):
-    #     if not_empty_EEG:
-    #         signal_df['N1_predict'] = signal_df['N1_predict_EEG']
-    #     elif not_empty_EEG2:
-    #         signal_df['N1_predict'] = signal_df['N1_predict_EEG2']
 
-    # if not_empty_EOG:
-    #     eog_con = signal_df['N1_predict_EOG'][signal_df['N1_predict_EOG']==int(1)]
-    #     signal_df['N1_predict'] = signal_df['N1_predict'] & eog_con
-    
-
-
-    # if (not_empty_EEG & not_empty_EOG):
-    #     eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
-    #     eog_con = signal_df['N1_predict_EOG'][signal_df['N1_predict_EOG']==int(1)]
-    #     signal_df['N1_predict'] = eeg_con & eog_con
-
-    #     length_pred = len(signal_df['N1_predict'][signal_df['N1_predict']==int(1)])
-    #     # print(length_pred)
-    #     if length_pred == 0:
-    #         signal_df['N1_predict'] = signal_df['N1_predict_EOG']
-    # elif not_empty_EOG:
-    #     signal_df['N1_predict'] = signal_df['N1_predict_EOG']
-    # elif not_empty_EEG:
-    #     signal_df['N1_predict'] = signal_df['N1_predict_EEG']
     print()
     return signal_df
 
