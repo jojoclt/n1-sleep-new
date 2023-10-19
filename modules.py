@@ -163,11 +163,11 @@ def lol(signal_df, write_folder, psg_id, save_fig=False):
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
     # 設定圖表標題和共用 x 軸標籤
-    fig.suptitle('Signal Visualization')
+    fig.suptitle(f'Signal Visualization {psg_id}')
     axes[-1].set_xlabel('Time')
     # 調整子圖之間的間距
     plt.tight_layout()
-    plt.ylim(0,10)
+    # plt.ylim(0,10)
     # 顯示圖表
     if save_fig:
         plt.savefig(write_folder + psg_id.split('.')[0],bbox_inches='tight')
@@ -182,7 +182,7 @@ def lol(signal_df, write_folder, psg_id, save_fig=False):
 def accuracy_method_1(signal_df):
     cond_pred = signal_df['N1_predict'][signal_df['N1_predict']==int(1)]
     cond_true = signal_df['N1'][signal_df['N1']==int(1)]
-    return cond_pred.index[0] == cond_true.index[0]
+    return len(cond_pred) and cond_pred.index[0] == cond_true.index[0]
 
 def accuracy_method_2(signal_df):
     cond_pred = signal_df['N1_predict'][signal_df['N1_predict']==int(1)]

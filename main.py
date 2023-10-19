@@ -22,7 +22,7 @@ EEG2_TOTAL_SIZE = 1500
 EOG_THRES = 120
 EOG_CONSEC = 2500
 EOG_TOTAL_SIZE = 2500
-extend = 30 
+extend = 30
 
 def reprval(text):
     thres = eval(f"{text}_THRES")

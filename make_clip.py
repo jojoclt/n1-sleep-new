@@ -169,7 +169,7 @@ def clip_edf_data(psg_id, hypnogram_id, read_folder, write_folder, duration_befo
     del edf_label
 
 
-duration_before = 30
+duration_before = None
 read_folder = "./sleep-cassette/"
 write_folder = f"./clips_front_extend_"
 if duration_before == None:
