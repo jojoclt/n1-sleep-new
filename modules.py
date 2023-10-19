@@ -165,6 +165,9 @@ def lol(signal_df, write_folder, psg_id, save_fig=False):
 
     # 設定圖表標題和共用 x 軸標籤
     fig.suptitle(f'Signal Visualization {psg_id}')
+    plt.tight_layout()
+    plt.rcParams.update({'font.size': 20})
+    plt.xticks(rotation=45)
     axes[-1].set_xlabel('Time')
     # 調整子圖之間的間距
     plt.tight_layout()
