@@ -90,5 +90,6 @@ for i, (psg_id, hypnogram_id) in enumerate(zip(psg_iter, hypnogram_iter)):
     count_1 += accuracy_method_1(signal_df)
     count_2 += accuracy_method_2(signal_df)
     count_3 += accuracy_method_3(signal_df)
-    print(count_1, count_2, count_3, f"/{i+1}")
+    count_4 += accuracy_method_4(signal_df)
+    print(count_1, count_2, count_3, count_4, f"/{i+1}")
     # break

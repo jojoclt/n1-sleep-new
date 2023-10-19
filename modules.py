@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
 import logging
+from sklearn.metrics import f1_score
 
 # This function has been modified to make use of numpy and optimized to be faster.
 def n1_multi_range(signal_df, thres = 25, CONSECUTIVE_STEPS = 50, total_size = 1500, DEBUG=False):
@@ -201,3 +202,7 @@ def accuracy_method_3(signal_df, min=2):
     # print(cond_true)
     arr = cond_pred & cond_true
     return (len(arr[arr]) > 0) and (cond_pred.index[0] >= cond_true.index[0])
+
+def accuracy_method_4(signal_df):
+    return sklearn.metrics.f1_score(signal_df['N1'], signal_df['N1_predict'])
+
