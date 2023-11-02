@@ -5,6 +5,7 @@ import matplotlib.dates as mdates
 import numpy as np
 import logging
 from sklearn.metrics import f1_score
+# from sklearn.metrics import cohen_kappa_score
 
 # This function has been modified to make use of numpy and optimized to be faster.
 def n1_multi_range(signal_df, thres = 25, CONSECUTIVE_STEPS = 50, total_size = 1500, DEBUG=False):
@@ -206,6 +207,18 @@ def accuracy_method_3(signal_df, min=2):
     arr = cond_pred & cond_true
     return (len(arr[arr]) > 0) and (cond_pred.index[0] >= cond_true.index[0])
 
+# f1_score
 def accuracy_method_4(signal_df):
     return len(signal_df['N1_predict']) and f1_score(signal_df['N1'], signal_df['N1_predict'])
+
+# cohen_kappa_score
+def accuracy_method_5(signal_df):
+    y_true = signal_df['N1']
+    y_pred = signal_df['N1_predict']
+    TP = sum(1 for true, pred in zip(y_true, y_pred) if true == 1 and pred == 1)
+    TN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 0)
+    FP = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
+    FN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
+    cohen_kappa_score = 2 * (TP * TN - FN * FP) / ((TP + FP) * (FP + TN) + (TP + FN) * (FN + TN))
+    return len(signal_df['N1_predict']) and cohen_kappa_score
 
