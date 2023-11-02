@@ -77,8 +77,9 @@ def clip_edf_data(psg_id, hypnogram_id, read_folder, write_folder, duration_befo
                 annotation_clip = annotation_clip.copy()
                 annotation_clip["Duration"].iloc[2] = 600.0
 
-            start_time = start + timedelta(
-                seconds=int(annotation_clip["Onset"].iloc[0])
+            start_time = start
+            if (duration_before != None): 
+                start_time += timedelta(seconds=int(annotation_clip["Onset"].iloc[0])
             )
             end_time = start + timedelta(
                 seconds=int(
@@ -194,4 +195,5 @@ for i in range(len(psg_list)):
         hypnogram_id=hypnogram_list[i][0:8],
         read_folder=read_folder,
         write_folder=write_folder,
+        duration_before = duration_before
     )

@@ -1,4 +1,4 @@
-import pyedflib # ref: https://pyedflib.readthedocs.io/en/latest/
+    import pyedflib # ref: https://pyedflib.readthedocs.io/en/latest/
 import pandas as pd
 import numpy as np
 import os
@@ -47,7 +47,7 @@ hypnogram_iter = iter(hypnogram_list)
 
 channels = ['EEG Fpz-Cz', 'EEG Pz-Oz', 'EOG horizontal']
 channel = channels[1]
-count_1, count_2, count_3 = 0, 0, 0
+count_1, count_2, count_3, count_4 = 0, 0, 0, 0
 
 for i, (psg_id, hypnogram_id) in enumerate(zip(psg_iter, hypnogram_iter)):
     print(f"{i}/{len(psg_list)}", end="\r")
@@ -85,11 +85,20 @@ for i, (psg_id, hypnogram_id) in enumerate(zip(psg_iter, hypnogram_iter)):
 
     signal_df = get_n1_eeg(signal_df, eeg_index, eeg2_index, eog_index, psg_id)
     lol(signal_df, write_folder, psg_id, save_fig=True)
-    print(psg_id, accuracy_method_1(signal_df), accuracy_method_2(signal_df), accuracy_method_3(signal_df))
+    acc1 = accuracy_method_1(signal_df)
+    acc2 = accuracy_method_2(signal_df)
+    acc3 = accuracy_method_3(signal_df)
+    f1_score = accuracy_method_4(signal_df)
+
+    # print(psg_id, acc1, acc2, acc3, f1_score)
 
     count_1 += accuracy_method_1(signal_df)
     count_2 += accuracy_method_2(signal_df)
     count_3 += accuracy_method_3(signal_df)
-    count_4 += accuracy_method_4(signal_df)
-    print(count_1, count_2, count_3, count_4, f"/{i+1}")
+    
+    # print(count_1, count_2, count_3, f"/{i+1}")
+
     # break
+# write to file
+value = pd.DataFrame([count_1, count_2, count_3])
+value.to_csv("value.csv")

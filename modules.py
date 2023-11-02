@@ -105,20 +105,20 @@ def get_n1_eeg(signal_df, eeg_index, eeg2_index, eog_index, psg_id):
 
     # 1. normal methods
     if (not_empty_EEG and not_empty_EEG2):
-        eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
-        eeg2_con = signal_df['N1_predict_EEG2'][signal_df['N1_predict_EEG2']==int(1)]
+        eeg_con = signal_df['N1_predict_EEG']
+        eeg2_con = signal_df['N1_predict_EEG2']
         signal_df['N1_predict'] &= eeg_con & eeg2_con
 
     elif (not_empty_EEG):
-        eeg_con = signal_df['N1_predict_EEG'][signal_df['N1_predict_EEG']==int(1)]
+        eeg_con = signal_df['N1_predict_EEG']
         signal_df['N1_predict'] &= eeg_con
         
     elif (not_empty_EEG2):
-        eeg2_con = signal_df['N1_predict_EEG2'][signal_df['N1_predict_EEG2']==int(1)]
+        eeg2_con = signal_df['N1_predict_EEG2']
         signal_df['N1_predict'] &= eeg2_con
 
     if (not_empty_EOG):
-        eog_con = signal_df['N1_predict_EOG'][signal_df['N1_predict_EOG']==int(1)]
+        eog_con = signal_df['N1_predict_EOG']
         signal_df['N1_predict'] &= eog_con
     
     try:
@@ -158,7 +158,7 @@ def lol(signal_df, write_folder, psg_id, save_fig=False):
             current_time += interval
 
         # 設定軸的標籤
-        ax.set_ylabel(column)
+        ax.set_ylabel(column, fontsize=12)
         loc = mdates.MinuteLocator(interval=1)
         ax.xaxis.set_major_locator(loc)
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
@@ -166,11 +166,11 @@ def lol(signal_df, write_folder, psg_id, save_fig=False):
     # 設定圖表標題和共用 x 軸標籤
     fig.suptitle(f'Signal Visualization {psg_id}')
     plt.tight_layout()
+    # 調整子圖之間的間距
     plt.rcParams.update({'font.size': 20})
     plt.xticks(rotation=45)
     axes[-1].set_xlabel('Time')
-    # 調整子圖之間的間距
-    plt.tight_layout()
+    # plt.tight_layout()
     # plt.ylim(0,10)
     # 顯示圖表
     if save_fig:
@@ -207,5 +207,5 @@ def accuracy_method_3(signal_df, min=2):
     return (len(arr[arr]) > 0) and (cond_pred.index[0] >= cond_true.index[0])
 
 def accuracy_method_4(signal_df):
-    return sklearn.metrics.f1_score(signal_df['N1'], signal_df['N1_predict'])
+    return len(signal_df['N1_predict']) and f1_score(signal_df['N1'], signal_df['N1_predict'])
 
