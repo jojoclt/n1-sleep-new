@@ -4,3 +4,4 @@ sleep-cassette/
 FEAT*/
 **/__pycache__/
 __pycache__/
+*.csv

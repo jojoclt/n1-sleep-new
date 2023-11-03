@@ -57,7 +57,7 @@ def main_function(eeg_thres, eeg2_thres, eog_thres):
 
     channels = ['EEG Fpz-Cz', 'EEG Pz-Oz', 'EOG horizontal']
     channel = channels[1]
-    count_1, count_2, count_3, count_4, count_5 = 0, 0, 0, 0, 0
+    count_1, count_2, count_3, count_4, count_5, count_6 = 0, 0, 0, 0, 0, 0
 
     df = pd.DataFrame()
 
@@ -103,6 +103,7 @@ def main_function(eeg_thres, eeg2_thres, eog_thres):
         # acc3 = accuracy_method_3(signal_df)
         f1_score = accuracy_method_4(signal_df)
         cohen = accuracy_method_5(signal_df)
+        accuracy = accuracy_method_6(signal_df)
         # if f1_score <= 0.25:
         #     lol(signal_df, write_folder, psg_id, save_fig=True)
         #     print(psg_id, f1_score, f"idx: {i}")
@@ -113,6 +114,7 @@ def main_function(eeg_thres, eeg2_thres, eog_thres):
         # count_3 += acc3
         count_4 += f1_score
         count_5 += cohen
+        count_6 += accuracy
 
         # print(count_1, count_2, count_3, f"/{i+1}")
         # df = pd.concat([df, pd.DataFrame([psg_id, acc1, acc2, acc3, f1_score])], axis=0)
@@ -124,7 +126,7 @@ def main_function(eeg_thres, eeg2_thres, eog_thres):
     # for full file
     # df = pd.DataFrame([eeg_thres, eeg2_thres, eog_thres, count_4/len(psg_list), count_5/len(psg_list)]).T
     df = pd.DataFrame([eeg_thres, eeg2_thres, eog_thres, count_4/COUNT, count_5/COUNT]).T
-    return count_4/COUNT, count_5/COUNT
+    return count_4/COUNT, count_5/COUNT, count_6/COUNT
 
     # df.to_csv("experiment_20.csv", index=False, mode='a', header=False)
 

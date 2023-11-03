@@ -226,3 +226,15 @@ def accuracy_method_5(signal_df):
         cohen_kappa_score = 0
     return len(signal_df['N1_predict']) and cohen_kappa_score
 
+def accuracy_method_6(signal_df):
+    y_true = signal_df['N1']
+    y_pred = signal_df['N1_predict']
+    TP = sum(1 for true, pred in zip(y_true, y_pred) if true == 1 and pred == 1)
+    TN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 0)
+    FP = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
+    FN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
+    try:
+        accuracy_score = (TP + TN) / (TP + FP + TN + FN)
+    except:
+        accuracy_score = 0
+    return len(signal_df['N1_predict']) and accuracy_score
