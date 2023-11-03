@@ -9,7 +9,7 @@ import fnmatch
 from modules import *
 from tqdm import tqdm
 import logging
-
+from sklearn.metrics import accuracy_score
 
 def main_function(eeg_thres, eeg2_thres, eog_thres):
     # the format of plot will be THRES/CONSEC/TOTAL_SIZZE
@@ -104,6 +104,7 @@ def main_function(eeg_thres, eeg2_thres, eog_thres):
         f1_score = accuracy_method_4(signal_df)
         cohen = accuracy_method_5(signal_df)
         accuracy = accuracy_method_6(signal_df)
+        # accuracy = accuracy_method_7(signal_df)
         # if f1_score <= 0.25:
         #     lol(signal_df, write_folder, psg_id, save_fig=True)
         #     print(psg_id, f1_score, f"idx: {i}")
@@ -131,5 +132,5 @@ def main_function(eeg_thres, eeg2_thres, eog_thres):
     # df.to_csv("experiment_20.csv", index=False, mode='a', header=False)
 
 if __name__ == '__main__':
-    res = main_function(35, 22, 156)
+    res = main_function(34, 20, 160)
     print(res)

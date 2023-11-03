@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
 import logging
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, accuracy_score
 # from sklearn.metrics import cohen_kappa_score
 
 # This function has been modified to make use of numpy and optimized to be faster.
@@ -218,7 +218,7 @@ def accuracy_method_5(signal_df):
     TP = sum(1 for true, pred in zip(y_true, y_pred) if true == 1 and pred == 1)
     TN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 0)
     FP = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
-    FN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
+    FN = sum(1 for true, pred in zip(y_true, y_pred) if true == 1 and pred == 0)
     
     try:
         cohen_kappa_score = 2 * (TP * TN - FN * FP) / ((TP + FP) * (FP + TN) + (TP + FN) * (FN + TN))
@@ -232,9 +232,12 @@ def accuracy_method_6(signal_df):
     TP = sum(1 for true, pred in zip(y_true, y_pred) if true == 1 and pred == 1)
     TN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 0)
     FP = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
-    FN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
+    FN = sum(1 for true, pred in zip(y_true, y_pred) if true == 1 and pred == 0)
     try:
         accuracy_score = (TP + TN) / (TP + FP + TN + FN)
     except:
         accuracy_score = 0
     return len(signal_df['N1_predict']) and accuracy_score
+
+def accuracy_method_7(signal_df):
+    return len(signal_df['N1_predict']) and accuracy_score(signal_df['N1'], signal_df['N1_predict'])
