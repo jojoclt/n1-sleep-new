@@ -159,9 +159,9 @@ def lol(signal_df, write_folder, psg_id, save_fig=False):
             current_time += interval
 
         # 設定軸的標籤
-        ax.set_ylabel(column, fontsize=12)
-        loc = mdates.MinuteLocator(interval=1)
-        ax.xaxis.set_major_locator(loc)
+        # ax.set_ylabel(column, fontsize=12)
+        # loc = mdates.MinuteLocator(interval=1)
+        # ax.xaxis.set_major_locator(loc)
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
     # 設定圖表標題和共用 x 軸標籤
@@ -219,6 +219,10 @@ def accuracy_method_5(signal_df):
     TN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 0)
     FP = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
     FN = sum(1 for true, pred in zip(y_true, y_pred) if true == 0 and pred == 1)
-    cohen_kappa_score = 2 * (TP * TN - FN * FP) / ((TP + FP) * (FP + TN) + (TP + FN) * (FN + TN))
+    
+    try:
+        cohen_kappa_score = 2 * (TP * TN - FN * FP) / ((TP + FP) * (FP + TN) + (TP + FN) * (FN + TN))
+    except:
+        cohen_kappa_score = 0
     return len(signal_df['N1_predict']) and cohen_kappa_score
 
